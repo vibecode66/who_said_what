@@ -2,6 +2,44 @@
 
 Speaker-attributed meeting transcripts: **who said what, and when**. It transcribes a multi-speaker recording, separates the voices, lets a person put names to them by ear, and runs a second, more careful pass on the part of the meeting that matters.
 
+## What this code does
+
+You give it **one audio recording of a meeting**, such as an M4A from a phone or a Teams/Zoom export. You get back a **written transcript with each line labeled by who said it, and when**.
+
+```
+[00:26:01] Speaker A: We need to know which devices are for the packet core domain...
+[00:26:41] Speaker B: Do you think we can get those details?
+[00:26:48] Speaker C: It's not going to be straightforward...
+```
+
+It does this in five steps:
+
+1. **Converts the audio** to a standard format (16 kHz mono WAV). It makes two copies: one lightly cleaned for transcription, and one untouched for voice recognition.
+2. **Turns speech into text** with OpenAI's Whisper, recording a timestamp for every word.
+3. **Works out who spoke when.** It recognizes the different voices and groups them as SPEAKER_00, SPEAKER_01, and so on, without knowing anyone's name yet.
+4. **Lets a person name the voices.** It plays a short sample clip of each speaker in the notebook. You listen, type the real names once, and they're applied to the whole transcript. This human step is what makes the names reliable.
+5. **Runs a second, more careful pass** on the part of the meeting you care about, or the whole meeting. It saves one audio clip per line so any name can be checked by ear and corrected in a single step.
+
+**Outputs**
+
+| File | Use |
+|---|---|
+| `focus_refined.md` | Readable transcript with speaker names |
+| `focus_refined.csv` | Same transcript, opens in Excel to filter or sort by speaker |
+| `focus_refined.srt` | Subtitles: play alongside the audio in VLC |
+| `transcript.md` | Full first-pass transcript |
+| MP4 (optional) | The audio with speaker-labeled subtitles burned in, which plays in Windows Media Player |
+
+Lines are flagged **⚠** where people talk over each other and **?** where the speech was hard to make out, so you know which lines to double-check.
+
+**Good for:** meeting minutes, finding who answered a specific question, or feeding a clean "who said what" transcript to an LLM for summaries and action items.
+
+## Customize for your meeting
+
+- **Starting prompt** (`DEFAULT_PROMPT` in `who_said_what.py`, or `--prompt`): list the attendees' names and any technical terms, so Whisper spells them correctly.
+- **Keywords** (`DEFAULT_KEYWORDS`, or `find --keywords`): words that mark the discussion you want to locate.
+- **Speaker count**: `--min-speakers` / `--max-speakers` for the first pass, and the exact number with `--speakers` for the refined pass.
+
 ## Files
 
 | File | What it is |
